@@ -13,6 +13,17 @@ logging.getLogger().setLevel(logging.CRITICAL)
 category_nodes, questions = load_model_with_questions_and_answers("model_with_qa.json")
 
 def test_model_with_answers(category_nodes, questions, query):
+    """
+    Testet das Modell mit einer Abfrage und gibt die gefundene Frage, Antwort und Gewichtung zurück.
+
+    Args:
+        category_nodes (list): Liste der Kategorie-Knoten.
+        questions (list): Liste der Fragen.
+        query (str): Die Abfrage, nach der gesucht werden soll.
+
+    Returns:
+        tuple: Die gefundene Frage, Antwort und Gewichtung.
+    """
     # Suche nach der ähnlichsten Frage im Modell
     matched_question = find_similar_question(questions, query)
 
@@ -28,8 +39,16 @@ def test_model_with_answers(category_nodes, questions, query):
         # Falls keine passende Frage gefunden wurde
         return f"Frage: \"{query}\"", "Antwort: \"Keine passende Frage gefunden\"", "Gewichtung: 0.00"
 
-# Gradio-Interface
 def gradio_interface(query):
+    """
+    Gradio-Schnittstelle zur Verarbeitung der Benutzerabfrage.
+
+    Args:
+        query (str): Die Abfrage des Benutzers.
+
+    Returns:
+        tuple: Die gefundene Frage, Antwort und Gewichtung.
+    """
     if category_nodes and questions:
         return test_model_with_answers(category_nodes, questions, query)
     else:
