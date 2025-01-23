@@ -1,6 +1,6 @@
 import logging
 import gradio as gr
-from neu import (
+from main import (
     load_model_with_questions_and_answers,
     simulate_question_answering,
     find_similar_question
