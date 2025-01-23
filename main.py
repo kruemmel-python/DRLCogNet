@@ -30,8 +30,15 @@ output_dir = "plots"
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
-# Funktion zum Aufteilen der CSV-Datei
 def split_csv(filename, chunk_size=1000, output_dir="data"):
+    """
+    Teilt eine CSV-Datei in kleinere Chunks auf und speichert diese in einem angegebenen Verzeichnis.
+
+    Args:
+        filename (str): Der Pfad zur CSV-Datei.
+        chunk_size (int): Die Anzahl der Zeilen pro Chunk.
+        output_dir (str): Das Verzeichnis, in dem die Chunks gespeichert werden sollen.
+    """
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -40,8 +47,15 @@ def split_csv(filename, chunk_size=1000, output_dir="data"):
         chunk.to_csv(os.path.join(output_dir, f"data_part_{i}.csv"), index=False)
         logging.info(f"Chunk {i} mit {len(chunk)} Zeilen gespeichert.")
 
-# Verbesserung 1: Verstärkung der Verbindungen bei häufig gestellten Fragen
 def strengthen_question_connection(category_nodes, question, category):
+    """
+    Verstärkt die Verbindung zwischen einer Frage und einer Kategorie im Netzwerk.
+
+    Args:
+        category_nodes (list): Liste der Kategorie-Knoten.
+        question (str): Die Frage, deren Verbindung verstärkt werden soll.
+        category (str): Die Kategorie, zu der die Frage gehört.
+    """
     category_node = next((node for node in category_nodes if node.label == category), None)
     if category_node:
         for conn in category_node.connections:
@@ -51,8 +65,16 @@ def strengthen_question_connection(category_nodes, question, category):
                 conn.weight = np.clip(conn.weight, 0, 1.0)
                 logging.info(f"Verstärkte Verbindung für Frage '{question}' in Kategorie '{category}': {old_weight:.4f} -> {conn.weight:.4f}")
 
-# Verbesserung 2: Erweiterte Hebb'sche Lernregel zur besseren Zuordnung von Fragen
 def enhanced_hebbian_learning(node, target_node, learning_rate=0.2, decay_factor=0.01):
+    """
+    Wendet eine erweiterte Hebb'sche Lernregel an, um die Verbindung zwischen zwei Knoten zu verstärken.
+
+    Args:
+        node (Node): Der Ursprungsknoten.
+        target_node (Node): Der Zielknoten.
+        learning_rate (float): Die Lernrate.
+        decay_factor (float): Der Verfallsfaktor.
+    """
     old_weight = None
     for conn in node.connections:
         if conn.target_node == target_node:
@@ -64,8 +86,18 @@ def enhanced_hebbian_learning(node, target_node, learning_rate=0.2, decay_factor
     if old_weight is not None:
         logging.info(f"Hebb'sches Lernen angewendet: Gewicht {old_weight:.4f} -> {conn.weight:.4f}")
 
-# Verbesserung 3: Simulation der Frageverarbeitung im Netzwerk
 def simulate_question_answering(category_nodes, question, questions):
+    """
+    Simuliert die Beantwortung einer Frage im Netzwerk.
+
+    Args:
+        category_nodes (list): Liste der Kategorie-Knoten.
+        question (str): Die Frage, die beantwortet werden soll.
+        questions (list): Liste aller Fragen.
+
+    Returns:
+        float: Die Aktivierung des Kategorie-Knotens.
+    """
     category = next((q['category'] for q in questions if q['question'] == question), None)
     if not category:
         logging.warning(f"Frage '{question}' nicht gefunden!")
@@ -84,13 +116,31 @@ def simulate_question_answering(category_nodes, question, questions):
         logging.warning(f"Kategorie '{category}' nicht im Netzwerk gefunden. Die Kategorie wird neu hinzugefügt!")
         return 0.0
 
-# Verbesserung 4: Finden der besten passenden Frage zur Benutzeranfrage
 def find_question_by_keyword(questions, keyword):
+    """
+    Findet Fragen, die ein bestimmtes Schlüsselwort enthalten.
+
+    Args:
+        questions (list): Liste aller Fragen.
+        keyword (str): Das Schlüsselwort, nach dem gesucht werden soll.
+
+    Returns:
+        list: Liste der gefundenen Fragen.
+    """
     matching_questions = [q for q in questions if keyword.lower() in q['question'].lower()]
     return matching_questions if matching_questions else None
 
-# Verbesserung 5: Suche nach der ähnlichsten Frage basierend auf einfachen Ähnlichkeitsmetriken
 def find_similar_question(questions, query):
+    """
+    Findet die ähnlichste Frage basierend auf einfachen Ähnlichkeitsmetriken.
+
+    Args:
+        questions (list): Liste aller Fragen.
+        query (str): Die Abfrage, nach der gesucht werden soll.
+
+    Returns:
+        dict: Die ähnlichste Frage.
+    """
     from difflib import get_close_matches
     question_texts = [q['question'] for q in questions]
     closest_matches = get_close_matches(query, question_texts, n=1, cutoff=0.6)
@@ -101,8 +151,15 @@ def find_similar_question(questions, query):
     else:
         return {"question": "Keine passende Frage gefunden", "category": "Unbekannt"}
 
-# Verbesserung 6: Testfunktion zur Überprüfung des Modells
 def test_model(category_nodes, questions, query):
+    """
+    Testet das Modell mit einer Abfrage und gibt die gefundene Frage und die ähnlichste Frage aus.
+
+    Args:
+        category_nodes (list): Liste der Kategorie-Knoten.
+        questions (list): Liste aller Fragen.
+        query (str): Die Abfrage, nach der gesucht werden soll.
+    """
     matched_question = find_question_by_keyword(questions, query)
     if matched_question:
         logging.info(f"Gefundene Frage: {matched_question[0]['question']} -> Kategorie: {matched_question[0]['category']}")
@@ -113,8 +170,16 @@ def test_model(category_nodes, questions, query):
     similarity_question = find_similar_question(questions, query)
     logging.info(f"Ähnlichste Frage: {similarity_question['question']} -> Kategorie: {similarity_question['category']}")
 
-# NetworkX-Funktionen für kausale Graphen
 def build_causal_graph(category_nodes):
+    """
+    Erstellt einen kausalen Graphen aus den Kategorie-Knoten.
+
+    Args:
+        category_nodes (list): Liste der Kategorie-Knoten.
+
+    Returns:
+        nx.DiGraph: Der erstellte kausale Graph.
+    """
     G = nx.DiGraph()
     for node in category_nodes:
         G.add_node(node.label)
@@ -123,6 +188,13 @@ def build_causal_graph(category_nodes):
     return G
 
 def analyze_causality_multiple(G, num_pairs=3):
+    """
+    Analysiert kausale Pfade zwischen zufälligen Knotenpaaren im Graphen.
+
+    Args:
+        G (nx.DiGraph): Der kausale Graph.
+        num_pairs (int): Die Anzahl der zu analysierenden Knotenpaare.
+    """
     if len(G.nodes) < 2:
         logging.warning("Graph enthält nicht genügend Knoten für eine Analyse.")
         return
@@ -142,20 +214,39 @@ def analyze_causality_multiple(G, num_pairs=3):
             logging.warning(f"Kein direkter Pfad zwischen '{start_node}' und '{target_node}' gefunden.")
 
 def analyze_node_influence(G):
+    """
+    Analysiert den Einfluss der Knoten im Graphen.
+
+    Args:
+        G (nx.DiGraph): Der kausale Graph.
+    """
     influence_scores = nx.pagerank(G, alpha=0.85)
     sorted_influences = sorted(influence_scores.items(), key=lambda x: x[1], reverse=True)
     for node, score in sorted_influences:
         logging.info(f"Knoten: {node}, Einfluss: {score:.4f}")
 
-# Funktion für Interventionen basierend auf Pearl's Do-Operator
 def do_intervention(node, new_value):
+    """
+    Führt eine Intervention auf einem Knoten durch, indem dessen Aktivierung auf einen neuen Wert gesetzt wird.
+
+    Args:
+        node (Node): Der Knoten, auf dem die Intervention durchgeführt werden soll.
+        new_value (float): Der neue Aktivierungswert.
+    """
     logging.info(f"Intervention: Setze {node.label} auf {new_value}")
     node.activation = new_value
     for conn in node.connections:
         conn.target_node.activation += node.activation * conn.weight
 
-# Kontextabhängiges Lernen verstärken
 def contextual_causal_analysis(node, context_factors, learning_rate=0.1):
+    """
+    Verstärkt die kausale Beziehung eines Knotens basierend auf Kontextfaktoren.
+
+    Args:
+        node (Node): Der Knoten, dessen kausale Beziehung verstärkt werden soll.
+        context_factors (dict): Die Kontextfaktoren.
+        learning_rate (float): Die Lernrate.
+    """
     context_factor = context_factors.get(node.label, 1.0)
     if node.activation > 0.8 and context_factor > 1.0:
         logging.info(f"Kausale Beziehung verstärkt für {node.label} aufgrund des Kontextes.")
@@ -164,8 +255,10 @@ def contextual_causal_analysis(node, context_factors, learning_rate=0.1):
             conn.weight = np.clip(conn.weight, 0, 1.0)
             logging.info(f"Gewicht aktualisiert: {node.label} → {conn.target_node.label}, Gewicht: {conn.weight:.4f}")
 
-# PyTorch-Modell für kausale Inferenz
 class CausalInferenceNN(nn.Module):
+    """
+    Ein PyTorch-Modell für kausale Inferenz.
+    """
     def __init__(self):
         super(CausalInferenceNN, self).__init__()
         self.fc1 = nn.Linear(10, 20)
@@ -175,8 +268,13 @@ class CausalInferenceNN(nn.Module):
         x = torch.relu(self.fc1(x))
         return self.fc2(x)
 
-# Debugging-Funktion
 def debug_connections(category_nodes):
+    """
+    Debuggt die Verbindungen zwischen den Kategorie-Knoten.
+
+    Args:
+        category_nodes (list): Liste der Kategorie-Knoten.
+    """
     start_time = time.time()
     for node in category_nodes:
         logging.info(f"Knoten: {node.label}")
@@ -185,20 +283,54 @@ def debug_connections(category_nodes):
     end_time = time.time()
     logging.info(f"debug_connections Ausführungszeit: {end_time - start_time:.4f} Sekunden")
 
-# Hilfsfunktionen
 def sigmoid(x):
+    """
+    Berechnet die Sigmoid-Funktion.
+
+    Args:
+        x (float): Der Eingabewert.
+
+    Returns:
+        float: Der Ausgabewert der Sigmoid-Funktion.
+    """
     return 1 / (1 + np.exp(-x))
 
 def add_activation_noise(activation, noise_level=0.1):
+    """
+    Fügt Rauschen zur Aktivierung hinzu.
+
+    Args:
+        activation (float): Die Aktivierung.
+        noise_level (float): Das Rausch-Level.
+
+    Returns:
+        float: Die Aktivierung mit Rauschen.
+    """
     noise = np.random.normal(0, noise_level)
     return np.clip(activation + noise, 0.0, 1.0)
 
 def decay_weights(category_nodes, decay_rate=0.002, forgetting_curve=0.95):
+    """
+    Verfall der Gewichte der Verbindungen zwischen den Knoten.
+
+    Args:
+        category_nodes (list): Liste der Kategorie-Knoten.
+        decay_rate (float): Die Verfallsrate.
+        forgetting_curve (float): Die Vergessenskurve.
+    """
     for node in category_nodes:
         for conn in node.connections:
             conn.weight *= (1 - decay_rate) * forgetting_curve
 
 def reward_connections(category_nodes, target_category, reward_factor=0.1):
+    """
+    Belohnt die Verbindungen zu einer bestimmten Kategorie.
+
+    Args:
+        category_nodes (list): Liste der Kategorie-Knoten.
+        target_category (str): Die Zielkategorie.
+        reward_factor (float): Der Belohnungsfaktor.
+    """
     for node in category_nodes:
         if node.label == target_category:
             for conn in node.connections:
@@ -206,10 +338,32 @@ def reward_connections(category_nodes, target_category, reward_factor=0.1):
                 conn.weight = np.clip(conn.weight, 0, 1.0)
 
 def apply_emotion_weight(activation, category_label, emotion_weights, emotional_state=1.0):
+    """
+    Wendet ein emotionales Gewicht auf die Aktivierung an.
+
+    Args:
+        activation (float): Die Aktivierung.
+        category_label (str): Das Label der Kategorie.
+        emotion_weights (dict): Die emotionalen Gewichte.
+        emotional_state (float): Der emotionale Zustand.
+
+    Returns:
+        float: Die gewichtete Aktivierung.
+    """
     emotion_factor = emotion_weights.get(category_label, 1.0) * emotional_state
     return activation * emotion_factor
 
 def generate_simulated_answers(data, personality_distributions):
+    """
+    Generiert simulierte Antworten basierend auf Persönlichkeitsverteilungen.
+
+    Args:
+        data (pd.DataFrame): Die Eingabedaten.
+        personality_distributions (dict): Die Persönlichkeitsverteilungen.
+
+    Returns:
+        list: Die simulierten Antworten.
+    """
     simulated_answers = []
     for _, row in data.iterrows():
         category = row['Kategorie']
@@ -219,6 +373,14 @@ def generate_simulated_answers(data, personality_distributions):
     return simulated_answers
 
 def social_influence(category_nodes, social_network, influence_factor=0.1):
+    """
+    Wendet sozialen Einfluss auf die Verbindungen zwischen den Knoten an.
+
+    Args:
+        category_nodes (list): Liste der Kategorie-Knoten.
+        social_network (dict): Das soziale Netzwerk.
+        influence_factor (float): Der Einflussfaktor.
+    """
     for node in category_nodes:
         for conn in node.connections:
             social_impact = sum([social_network.get(conn.target_node.label, 0)]) * influence_factor
@@ -226,20 +388,57 @@ def social_influence(category_nodes, social_network, influence_factor=0.1):
             conn.weight = np.clip(conn.weight, 0, 1.0)
 
 def update_emotional_state(emotional_state, emotional_change_rate=0.02):
+    """
+    Aktualisiert den emotionalen Zustand.
+
+    Args:
+        emotional_state (float): Der emotionale Zustand.
+        emotional_change_rate (float): Die Änderungsrate des emotionalen Zustands.
+
+    Returns:
+        float: Der aktualisierte emotionale Zustand.
+    """
     emotional_state += np.random.normal(0, emotional_change_rate)
     return np.clip(emotional_state, 0.7, 1.5)
 
 def apply_contextual_factors(activation, node, context_factors):
+    """
+    Wendet kontextuelle Faktoren auf die Aktivierung an.
+
+    Args:
+        activation (float): Die Aktivierung.
+        node (Node): Der Knoten.
+        context_factors (dict): Die kontextuellen Faktoren.
+
+    Returns:
+        float: Die aktualisierte Aktivierung.
+    """
     context_factor = context_factors.get(node.label, 1.0)
     return activation * context_factor * random.uniform(0.9, 1.1)
 
 def long_term_memory(category_nodes, long_term_factor=0.01):
+    """
+    Verstärkt die Gewichte der Verbindungen im Langzeitgedächtnis.
+
+    Args:
+        category_nodes (list): Liste der Kategorie-Knoten.
+        long_term_factor (float): Der Langzeitfaktor.
+    """
     for node in category_nodes:
         for conn in node.connections:
             conn.weight += long_term_factor * conn.weight
             conn.weight = np.clip(conn.weight, 0, 1.0)
 
 def hebbian_learning(node, learning_rate=0.3, weight_limit=1.0, reg_factor=0.005):
+    """
+    Wendet Hebb'sches Lernen auf die Verbindungen eines Knotens an.
+
+    Args:
+        node (Node): Der Knoten.
+        learning_rate (float): Die Lernrate.
+        weight_limit (float): Die Gewichtsgrenze.
+        reg_factor (float): Der Regularisierungsfaktor.
+    """
     for connection in node.connections:
         old_weight = connection.weight
         connection.weight += learning_rate * node.activation * connection.target_node.activation
@@ -249,13 +448,18 @@ def hebbian_learning(node, learning_rate=0.3, weight_limit=1.0, reg_factor=0.005
         connection.target_node.activation_history.append(connection.target_node.activation)
         logging.info(f"Hebb'sches Lernen: Gewicht von {old_weight:.4f} auf {connection.weight:.4f} erhöht")
 
-# Klassen für Netzwerkstruktur
 class Connection:
+    """
+    Eine Verbindung zwischen zwei Knoten im Netzwerk.
+    """
     def __init__(self, target_node, weight=None):
         self.target_node = target_node
         self.weight = weight if weight is not None else random.uniform(0.1, 1.0)
 
 class Node:
+    """
+    Ein Knoten im Netzwerk.
+    """
     def __init__(self, label):
         self.label = label
         self.connections = []
@@ -263,9 +467,22 @@ class Node:
         self.activation_history = []
 
     def add_connection(self, target_node, weight=None):
+        """
+        Fügt eine Verbindung zu einem Zielknoten hinzu.
+
+        Args:
+            target_node (Node): Der Zielknoten.
+            weight (float): Das Gewicht der Verbindung.
+        """
         self.connections.append(Connection(target_node, weight))
 
     def save_state(self):
+        """
+        Speichert den Zustand des Knotens.
+
+        Returns:
+            dict: Der gespeicherte Zustand des Knotens.
+        """
         return {
             "label": self.label,
             "activation": self.activation,
@@ -275,6 +492,16 @@ class Node:
 
     @staticmethod
     def load_state(state, nodes_dict):
+        """
+        Lädt den Zustand eines Knotens.
+
+        Args:
+            state (dict): Der gespeicherte Zustand des Knotens.
+            nodes_dict (dict): Ein Dictionary der Knoten.
+
+        Returns:
+            Node: Der geladene Knoten.
+        """
         node = Node(state["label"])
         node.activation = state["activation"]
         node.activation_history = state["activation_history"]
@@ -285,6 +512,9 @@ class Node:
         return node
 
 class MemoryNode(Node):
+    """
+    Ein Gedächtnisknoten im Netzwerk.
+    """
     def __init__(self, label, memory_type="short_term"):
         super().__init__(label)
         self.memory_type = memory_type
@@ -292,6 +522,14 @@ class MemoryNode(Node):
         self.time_in_memory = 0
 
     def decay(self, decay_rate, context_factors, emotional_state):
+        """
+        Verfall der Gewichte der Verbindungen basierend auf dem Gedächtnistyp.
+
+        Args:
+            decay_rate (float): Die Verfallsrate.
+            context_factors (dict): Die kontextuellen Faktoren.
+            emotional_state (float): Der emotionale Zustand.
+        """
         context_factor = context_factors.get(self.label, 1.0)
         emotional_factor = emotional_state
         for conn in self.connections:
@@ -303,6 +541,12 @@ class MemoryNode(Node):
                 conn.weight *= (1 - decay_rate * 0.5 * context_factor * emotional_factor)
 
     def promote(self, activation_threshold=0.7):
+        """
+        Fördert den Knoten basierend auf der Aktivierungshistorie.
+
+        Args:
+            activation_threshold (float): Der Aktivierungsschwellenwert.
+        """
         if len(self.activation_history) == 0:
             return
         if self.memory_type == "short_term" and np.mean(self.activation_history[-5:]) > activation_threshold:
@@ -313,10 +557,22 @@ class MemoryNode(Node):
             self.retention_time = 100
 
 class CortexCreativus(Node):
+    """
+    Ein Knoten, der neue Ideen generiert.
+    """
     def __init__(self, label):
         super().__init__(label)
 
     def generate_new_ideas(self, category_nodes):
+        """
+        Generiert neue Ideen basierend auf den Aktivierungen der Kategorie-Knoten.
+
+        Args:
+            category_nodes (list): Liste der Kategorie-Knoten.
+
+        Returns:
+            list: Die generierten neuen Ideen.
+        """
         new_ideas = []
         for node in category_nodes:
             if node.activation > 0.5:
@@ -325,10 +581,22 @@ class CortexCreativus(Node):
         return new_ideas
 
 class SimulatrixNeuralis(Node):
+    """
+    Ein Knoten, der Szenarien simuliert.
+    """
     def __init__(self, label):
         super().__init__(label)
 
     def simulate_scenarios(self, category_nodes):
+        """
+        Simuliert Szenarien basierend auf den Aktivierungen der Kategorie-Knoten.
+
+        Args:
+            category_nodes (list): Liste der Kategorie-Knoten.
+
+        Returns:
+            list: Die simulierten Szenarien.
+        """
         scenarios = []
         for node in category_nodes:
             if node.activation > 0.5:
@@ -337,10 +605,22 @@ class SimulatrixNeuralis(Node):
         return scenarios
 
 class CortexCriticus(Node):
+    """
+    Ein Knoten, der Ideen bewertet.
+    """
     def __init__(self, label):
         super().__init__(label)
 
     def evaluate_ideas(self, ideas):
+        """
+        Bewertet Ideen.
+
+        Args:
+            ideas (list): Die zu bewertenden Ideen.
+
+        Returns:
+            list: Die bewerteten Ideen.
+        """
         evaluated_ideas = []
         for idea in ideas:
             evaluation_score = random.uniform(0, 1)
@@ -349,10 +629,23 @@ class CortexCriticus(Node):
         return evaluated_ideas
 
 class LimbusAffectus(Node):
+    """
+    Ein Knoten, der emotionale Gewichte auf Ideen anwendet.
+    """
     def __init__(self, label):
         super().__init__(label)
 
     def apply_emotion_weight(self, ideas, emotional_state):
+        """
+        Wendet emotionale Gewichte auf Ideen an.
+
+        Args:
+            ideas (list): Die Ideen.
+            emotional_state (float): Der emotionale Zustand.
+
+        Returns:
+            list: Die emotional gewichteten Ideen.
+        """
         weighted_ideas = []
         for idea in ideas:
             weighted_idea = f"Emotionally weighted idea: {idea} - Weight: {emotional_state}"
@@ -360,18 +653,39 @@ class LimbusAffectus(Node):
         return weighted_ideas
 
 class MetaCognitio(Node):
+    """
+    Ein Knoten, der das System optimiert.
+    """
     def __init__(self, label):
         super().__init__(label)
 
     def optimize_system(self, category_nodes):
+        """
+        Optimiert das System.
+
+        Args:
+            category_nodes (list): Liste der Kategorie-Knoten.
+        """
         for node in category_nodes:
             node.activation *= random.uniform(0.9, 1.1)
 
 class CortexSocialis(Node):
+    """
+    Ein Knoten, der soziale Interaktionen simuliert.
+    """
     def __init__(self, label):
         super().__init__(label)
 
     def simulate_social_interactions(self, category_nodes):
+        """
+        Simuliert soziale Interaktionen basierend auf den Aktivierungen der Kategorie-Knoten.
+
+        Args:
+            category_nodes (list): Liste der Kategorie-Knoten.
+
+        Returns:
+            list: Die simulierten sozialen Interaktionen.
+        """
         interactions = []
         for node in category_nodes:
             if node.activation > 0.5:
@@ -380,13 +694,28 @@ class CortexSocialis(Node):
         return interactions
 
 def connect_new_brains_to_network(category_nodes, new_brains):
+    """
+    Verbindet neue Gehirne mit dem Netzwerk.
+
+    Args:
+        category_nodes (list): Liste der Kategorie-Knoten.
+        new_brains (list): Liste der neuen Gehirne.
+    """
     for brain in new_brains:
         for node in category_nodes:
             brain.add_connection(node)
             node.add_connection(brain)
 
-# Netzwerk-Initialisierung
 def initialize_quiz_network(categories):
+    """
+    Initialisiert das Quiz-Netzwerk mit den gegebenen Kategorien.
+
+    Args:
+        categories (list): Liste der Kategorien.
+
+    Returns:
+        list: Liste der Kategorie-Knoten.
+    """
     try:
         category_nodes = [Node(c) for c in categories]
         for node in category_nodes:
@@ -404,8 +733,17 @@ def initialize_quiz_network(categories):
         logging.error(f"Fehler bei der Netzwerk-Initialisierung: {e}")
         return []
 
-# Signalpropagation
 def propagate_signal(node, input_signal, emotion_weights, emotional_state=1.0, context_factors=None):
+    """
+    Propagiert ein Signal durch das Netzwerk.
+
+    Args:
+        node (Node): Der Knoten, an dem das Signal beginnt.
+        input_signal (float): Das Eingangssignal.
+        emotion_weights (dict): Die emotionalen Gewichte.
+        emotional_state (float): Der emotionale Zustand.
+        context_factors (dict): Die kontextuellen Faktoren.
+    """
     node.activation = add_activation_noise(sigmoid(input_signal * random.uniform(0.8, 1.2)))
     node.activation_history.append(node.activation)  # Aktivierung speichern
     node.activation = apply_emotion_weight(node.activation, node.label, emotion_weights, emotional_state)
@@ -417,6 +755,17 @@ def propagate_signal(node, input_signal, emotion_weights, emotional_state=1.0, c
         connection.target_node.activation += node.activation * connection.weight
 
 def propagate_signal_with_memory(node, input_signal, category_nodes, memory_nodes, context_factors, emotional_state):
+    """
+    Propagiert ein Signal durch das Netzwerk mit Gedächtnis.
+
+    Args:
+        node (Node): Der Knoten, an dem das Signal beginnt.
+        input_signal (float): Das Eingangssignal.
+        category_nodes (list): Liste der Kategorie-Knoten.
+        memory_nodes (list): Liste der Gedächtnisknoten.
+        context_factors (dict): Die kontextuellen Faktoren.
+        emotional_state (float): Der emotionale Zustand.
+    """
     node.activation = add_activation_noise(sigmoid(input_signal))
     node.activation_history.append(node.activation)
     for connection in node.connections:
@@ -425,8 +774,24 @@ def propagate_signal_with_memory(node, input_signal, category_nodes, memory_node
         memory_node.time_in_memory += 1
         memory_node.promote()
 
-# Simulation mit Anpassungen
 def simulate_learning(data, category_nodes, personality_distributions, epochs=1, learning_rate=0.8, reward_interval=5, decay_rate=0.002, emotional_state=1.0, context_factors=None):
+    """
+    Simuliert das Lernen im Netzwerk.
+
+    Args:
+        data (pd.DataFrame): Die Eingabedaten.
+        category_nodes (list): Liste der Kategorie-Knoten.
+        personality_distributions (dict): Die Persönlichkeitsverteilungen.
+        epochs (int): Die Anzahl der Epochen.
+        learning_rate (float): Die Lernrate.
+        reward_interval (int): Das Belohnungsintervall.
+        decay_rate (float): Die Verfallsrate.
+        emotional_state (float): Der emotionale Zustand.
+        context_factors (dict): Die kontextuellen Faktoren.
+
+    Returns:
+        tuple: Die Aktivierungshistorie und die Gewichtshistorie.
+    """
     if context_factors is None:
         context_factors = {}
 
@@ -501,6 +866,18 @@ def simulate_learning(data, category_nodes, personality_distributions, epochs=1,
     return activation_history, weights_history
 
 def simulate_multilevel_memory(data, category_nodes, personality_distributions, epochs=1):
+    """
+    Simuliert das Lernen im Netzwerk mit mehrstufigem Gedächtnis.
+
+    Args:
+        data (pd.DataFrame): Die Eingabedaten.
+        category_nodes (list): Liste der Kategorie-Knoten.
+        personality_distributions (dict): Die Persönlichkeitsverteilungen.
+        epochs (int): Die Anzahl der Epochen.
+
+    Returns:
+        tuple: Die Kurzzeit-, Mittelzeit- und Langzeitgedächtnisknoten.
+    """
     short_term_memory = [MemoryNode(c, "short_term") for c in category_nodes]
     mid_term_memory = []
     long_term_memory = []
@@ -521,13 +898,28 @@ def simulate_multilevel_memory(data, category_nodes, personality_distributions, 
     return short_term_memory, mid_term_memory, long_term_memory
 
 def update_memory_stages(memory_nodes):
+    """
+    Aktualisiert die Gedächtnisstufen der Gedächtnisknoten.
+
+    Args:
+        memory_nodes (list): Liste der Gedächtnisknoten.
+
+    Returns:
+        tuple: Die Kurzzeit-, Mittelzeit- und Langzeitgedächtnisknoten.
+    """
     short_term_memory = [node for node in memory_nodes if node.memory_type == "short_term"]
     mid_term_memory = [node for node in memory_nodes if node.memory_type == "mid_term"]
     long_term_memory = [node for node in memory_nodes if node.memory_type == "long_term"]
     return short_term_memory, mid_term_memory, long_term_memory
 
-# Plot-Funktion
 def plot_activation_history(activation_history, filename="activation_history.png"):
+    """
+    Erstellt einen Plot der Aktivierungshistorie.
+
+    Args:
+        activation_history (dict): Die Aktivierungshistorie.
+        filename (str): Der Dateiname des Plots.
+    """
     if not activation_history:
         logging.warning("No activation history to plot")
         return
@@ -544,8 +936,15 @@ def plot_activation_history(activation_history, filename="activation_history.png
     plt.close()
     logging.info(f"Plot gespeichert unter: {os.path.join(output_dir, filename)}")
 
-# Visualisierung der Aktivierungs- und Gewichtsdynamik
 def plot_dynamics(activation_history, weights_history, filename="dynamics.png"):
+    """
+    Erstellt einen Plot der Aktivierungs- und Gewichtsdynamik.
+
+    Args:
+        activation_history (dict): Die Aktivierungshistorie.
+        weights_history (dict): Die Gewichtshistorie.
+        filename (str): Der Dateiname des Plots.
+    """
     if not weights_history:
         logging.error("weights_history ist leer.")
         return
@@ -575,8 +974,16 @@ def plot_dynamics(activation_history, weights_history, filename="dynamics.png"):
     plt.close()
     logging.info(f"Plot gespeichert unter: {os.path.join(output_dir, filename)}")
 
-# Visualisierung der Gedächtnisverteilung
 def plot_memory_distribution(short_term_memory, mid_term_memory, long_term_memory, filename="memory_distribution.png"):
+    """
+    Erstellt einen Plot der Gedächtnisverteilung.
+
+    Args:
+        short_term_memory (list): Liste der Kurzzeitgedächtnisknoten.
+        mid_term_memory (list): Liste der Mittelzeitgedächtnisknoten.
+        long_term_memory (list): Liste der Langzeitgedächtnisknoten.
+        filename (str): Der Dateiname des Plots.
+    """
     counts = [len(short_term_memory), len(mid_term_memory), len(long_term_memory)]
     labels = ["Kurzfristig", "Mittelfristig", "Langfristig"]
     plt.figure(figsize=(8, 6))
@@ -587,8 +994,14 @@ def plot_memory_distribution(short_term_memory, mid_term_memory, long_term_memor
     plt.close()
     logging.info(f"Plot gespeichert unter: {os.path.join(output_dir, filename)}")
 
-# Visualisierung der Aktivierungswerte als Heatmap
 def plot_activation_heatmap(activation_history, filename="activation_heatmap.png"):
+    """
+    Erstellt einen Plot der Aktivierungswerte als Heatmap.
+
+    Args:
+        activation_history (dict): Die Aktivierungshistorie.
+        filename (str): Der Dateiname des Plots.
+    """
     if not activation_history:
         logging.warning("No activation history to plot")
         return
@@ -611,8 +1024,15 @@ def plot_activation_heatmap(activation_history, filename="activation_heatmap.png
     plt.close()
     logging.info(f"Plot gespeichert unter: {os.path.join(output_dir, filename)}")
 
-# Visualisierung der Netzwerktopologie
 def plot_network_topology(category_nodes, new_brains, filename="network_topology.png"):
+    """
+    Erstellt einen Plot der Netzwerktopologie.
+
+    Args:
+        category_nodes (list): Liste der Kategorie-Knoten.
+        new_brains (list): Liste der neuen Gehirne.
+        filename (str): Der Dateiname des Plots.
+    """
     G = nx.DiGraph()
     for node in category_nodes:
         G.add_node(node.label)
@@ -635,6 +1055,13 @@ def plot_network_topology(category_nodes, new_brains, filename="network_topology
     logging.info(f"Plot gespeichert unter: {os.path.join(output_dir, filename)}")
 
 def save_model(category_nodes, filename="model.json"):
+    """
+    Speichert das Modell in einer JSON-Datei.
+
+    Args:
+        category_nodes (list): Liste der Kategorie-Knoten.
+        filename (str): Der Dateiname der JSON-Datei.
+    """
     model_data = {
         "nodes": [node.save_state() for node in category_nodes]
     }
@@ -643,6 +1070,14 @@ def save_model(category_nodes, filename="model.json"):
     logging.info(f"Modell gespeichert in {filename}")
 
 def save_model_with_questions_and_answers(category_nodes, questions, filename="model_with_qa.json"):
+    """
+    Speichert das Modell mit Fragen und Antworten in einer JSON-Datei.
+
+    Args:
+        category_nodes (list): Liste der Kategorie-Knoten.
+        questions (list): Liste der Fragen.
+        filename (str): Der Dateiname der JSON-Datei.
+    """
     global model_saved
     logging.info("Starte Speichern des Modells...")
 
@@ -672,6 +1107,15 @@ def save_model_with_questions_and_answers(category_nodes, questions, filename="m
         logging.error(f"Fehler beim Speichern des Modells: {e}")
 
 def load_model_with_questions_and_answers(filename="model_with_qa.json"):
+    """
+    Lädt das Modell mit Fragen und Antworten aus einer JSON-Datei.
+
+    Args:
+        filename (str): Der Dateiname der JSON-Datei.
+
+    Returns:
+        tuple: Die Liste der Kategorie-Knoten und die Liste der Fragen.
+    """
     global initialized
     if initialized:
         logging.info("Modell bereits initialisiert.")
@@ -705,6 +1149,12 @@ def load_model_with_questions_and_answers(filename="model_with_qa.json"):
         return None, None
 
 def update_questions_with_answers(filename="model_with_qa.json"):
+    """
+    Aktualisiert die Fragen mit Antworten in der JSON-Datei.
+
+    Args:
+        filename (str): Der Dateiname der JSON-Datei.
+    """
     with open(filename, "r") as file:
         model_data = json.load(file)
 
@@ -717,6 +1167,17 @@ def update_questions_with_answers(filename="model_with_qa.json"):
     logging.info(f"Fragen wurden mit Antworten aktualisiert und gespeichert in {filename}")
 
 def find_best_answer(category_nodes, questions, query):
+    """
+    Findet die beste Antwort auf eine Abfrage.
+
+    Args:
+        category_nodes (list): Liste der Kategorie-Knoten.
+        questions (list): Liste der Fragen.
+        query (str): Die Abfrage.
+
+    Returns:
+        str: Die beste Antwort.
+    """
     matched_question = find_similar_question(questions, query)
     if matched_question:
         logging.info(f"Gefundene Frage: {matched_question['question']} -> Kategorie: {matched_question['category']}")
@@ -728,6 +1189,16 @@ def find_best_answer(category_nodes, questions, query):
         return None
 
 def create_dashboard(category_nodes, activation_history, short_term_memory, mid_term_memory, long_term_memory):
+    """
+    Erstellt ein Dashboard zur Anzeige der Aktivierungshistorie, Gedächtnisverteilung und Netzwerktopologie.
+
+    Args:
+        category_nodes (list): Liste der Kategorie-Knoten.
+        activation_history (dict): Die Aktivierungshistorie.
+        short_term_memory (list): Liste der Kurzzeitgedächtnisknoten.
+        mid_term_memory (list): Liste der Mittelzeitgedächtnisknoten.
+        long_term_memory (list): Liste der Langzeitgedächtnisknoten.
+    """
     root = tk.Tk()
     root.title("Psyco Dashboard")
 
@@ -812,6 +1283,16 @@ def create_dashboard(category_nodes, activation_history, short_term_memory, mid_
     root.mainloop()
 
 def process_csv_in_chunks(filename, chunk_size=10000):
+    """
+    Verarbeitet eine CSV-Datei in Chunks.
+
+    Args:
+        filename (str): Der Pfad zur CSV-Datei.
+        chunk_size (int): Die Anzahl der Zeilen pro Chunk.
+
+    Returns:
+        pd.DataFrame: Die verarbeiteten Daten.
+    """
     global category_nodes, questions
     logging.info(f"Beginne Verarbeitung der Datei: {filename}")
 
@@ -845,6 +1326,14 @@ def process_csv_in_chunks(filename, chunk_size=10000):
     return None
 
 def process_single_entry(question, category, answer):
+    """
+    Verarbeitet einen einzelnen Eintrag und fügt ihn dem Netzwerk hinzu.
+
+    Args:
+        question (str): Die Frage.
+        category (str): Die Kategorie.
+        answer (str): Die Antwort.
+    """
     global category_nodes, questions
 
     # Sicherstellen, dass die globalen Variablen initialisiert sind
@@ -866,6 +1355,13 @@ def process_single_entry(question, category, answer):
     logging.info(f"Neue Frage hinzugefügt: '{question}' -> Kategorie: '{category}'")
 
 def process_csv_with_dask(filename, chunk_size=10000):
+    """
+    Verarbeitet eine CSV-Datei mit Dask.
+
+    Args:
+        filename (str): Der Pfad zur CSV-Datei.
+        chunk_size (int): Die Anzahl der Zeilen pro Chunk.
+    """
     try:
         ddf = dd.read_csv(filename, blocksize=chunk_size)
         ddf = ddf.astype({'Kategorie': 'category'})
@@ -878,6 +1374,13 @@ def process_csv_with_dask(filename, chunk_size=10000):
         logging.error(f"Fehler beim Verarbeiten der Datei mit Dask: {e}")
 
 def save_to_sqlite(filename, db_name="dataset.db"):
+    """
+    Speichert die CSV-Daten in einer SQLite-Datenbank.
+
+    Args:
+        filename (str): Der Pfad zur CSV-Datei.
+        db_name (str): Der Name der SQLite-Datenbank.
+    """
     conn = sqlite3.connect(db_name)
     chunk_iter = pd.read_csv(filename, chunksize=10000)
     for chunk in chunk_iter:
@@ -887,6 +1390,15 @@ def save_to_sqlite(filename, db_name="dataset.db"):
     logging.info("CSV-Daten wurden erfolgreich in SQLite gespeichert.")
 
 def load_from_sqlite(db_name="dataset.db"):
+    """
+    Lädt die Daten aus einer SQLite-Datenbank.
+
+    Args:
+        db_name (str): Der Name der SQLite-Datenbank.
+
+    Returns:
+        pd.DataFrame: Die geladenen Daten.
+    """
     conn = sqlite3.connect(db_name)
     query = "SELECT Frage, Kategorie, Antwort FROM qa_data"
     data = pd.read_sql_query(query, conn)
@@ -894,6 +1406,12 @@ def load_from_sqlite(db_name="dataset.db"):
     return data
 
 def save_partial_model(filename="partial_model.json"):
+    """
+    Speichert ein Teilmodell in einer JSON-Datei.
+
+    Args:
+        filename (str): Der Dateiname der JSON-Datei.
+    """
     model_data = {
         "nodes": [node.save_state() for node in category_nodes],
         "questions": questions
@@ -903,11 +1421,24 @@ def save_partial_model(filename="partial_model.json"):
     logging.info("Teilmodell gespeichert.")
 
 def lazy_load_csv(filename, chunk_size=10000):
+    """
+    Lädt eine CSV-Datei faul in Chunks.
+
+    Args:
+        filename (str): Der Pfad zur CSV-Datei.
+        chunk_size (int): Die Anzahl der Zeilen pro Chunk.
+
+    Yields:
+        tuple: Die Frage, Kategorie und Antwort.
+    """
     for chunk in pd.read_csv(filename, chunksize=chunk_size):
         for _, row in chunk.iterrows():
             yield row['Frage'], row['Kategorie'], row['Antwort']
 
 def main():
+    """
+    Hauptfunktion zum Ausführen der Simulation.
+    """
     start_time = time.time()
     category_nodes, questions = load_model_with_questions_and_answers("model_with_qa.json")
 
@@ -957,6 +1488,15 @@ def main():
     logging.info(f"Simulation abgeschlossen. Gesamtdauer: {end_time - start_time:.2f} Sekunden")
 
 def run_simulation_from_gui(learning_rate, decay_rate, reward_interval, epochs):
+    """
+    Führt die Simulation aus der GUI aus.
+
+    Args:
+        learning_rate (float): Die Lernrate.
+        decay_rate (float): Die Verfallsrate.
+        reward_interval (int): Das Belohnungsintervall.
+        epochs (int): Die Anzahl der Epochen.
+    """
     global model_saved
     model_saved = False  # Erzwinge das Speichern nach dem Training
 
@@ -1042,6 +1582,9 @@ def run_simulation_from_gui(learning_rate, decay_rate, reward_interval, epochs):
     messagebox.showinfo("Ergebnis", f"Simulation abgeschlossen! Dauer: {end_time - start_time:.2f} Sekunden")
 
 def async_initialize_network():
+    """
+    Initialisiert das Netzwerk asynchron.
+    """
     global category_nodes, questions, model_saved
     logging.info("Starte Initialisierung des Netzwerks...")
 
@@ -1094,6 +1637,9 @@ def async_initialize_network():
     logging.info("Netzwerk erfolgreich initialisiert.")
 
 def start_gui():
+    """
+    Startet die GUI.
+    """
     def start_simulation():
         try:
             threading.Thread(target=run_simulation_from_gui, args=(0.8, 0.002, 5, 10), daemon=True).start()
