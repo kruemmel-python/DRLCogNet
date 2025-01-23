@@ -12,6 +12,14 @@ logging.getLogger().setLevel(logging.CRITICAL)
 category_nodes, questions = load_model_with_questions_and_answers("model_with_qa.json")
 
 def test_model_with_answers(category_nodes, questions, query):
+    """
+    Testet das Modell mit einer Abfrage und gibt die gefundene Frage, Antwort und Gewichtung aus.
+
+    Args:
+        category_nodes (list): Liste der Kategorie-Knoten.
+        questions (list): Liste der Fragen.
+        query (str): Die Abfrage, nach der gesucht werden soll.
+    """
     # Suche nach der ähnlichsten Frage im Modell
     matched_question = find_similar_question(questions, query)
 
@@ -40,7 +48,7 @@ if category_nodes and questions:
     test_model_with_answers(category_nodes, questions, "Wer hat gesprochen?")
     test_model_with_answers(category_nodes, questions, "Prüfen Sie das nach!")
     test_model_with_answers(category_nodes, questions, "Komm schnell!")
-    
+
     test_model_with_answers(category_nodes, questions, "Wer geht?")
     test_model_with_answers(category_nodes, questions, "Wen kümmert das schon?")
     test_model_with_answers(category_nodes, questions, "Wir haben gewonnen!")
